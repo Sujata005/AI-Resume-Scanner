@@ -114,80 +114,6 @@ Feel free to submit issues, fork the repository, and create pull requests for an
 
 MIT License - feel free to use this project for personal or commercial purposes.
 
-# AI Chat Assistant
-
-A modern, local web application that lets you chat with an AI assistant powered by OpenAI's API.
-
-## Features
-
-- 🎨 Clean, modern UI with responsive design
-- 💬 Real-time chat interface
-- 🧠 Structured AI responses (Summary, Details, Key Takeaways)
-- 🌓 Light/Dark mode toggle
-- ⚡ Fast and lightweight
-
-## Tech Stack
-
-- **Frontend**: HTML, CSS, JavaScript
-- **Backend**: Flask (Python)
-- **AI**: OpenAI API (GPT-4o-mini)
-
-## Setup Instructions
-
-### 1. Install Python Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 2. Configure OpenAI API Key
-
-Create a `.env` file in the project root:
-
-```bash
-OPENAI_API_KEY=your_actual_api_key_here
-```
-
-Get your API key from: https://platform.openai.com/api-keys
-
-### 3. Run the Application
-
-```bash
-python app.py
-```
-
-### 4. Open in Browser
-
-Navigate to: http://localhost:5000
-
-## Usage
-
-1. Type your question in the input field
-2. Press Enter or click Send
-3. Wait for the AI to generate a structured response
-4. View the formatted answer with sections
-
-## Project Structure
-
-```
-ai-chat-assistant/
-├── app.py              # Flask backend
-├── requirements.txt    # Python dependencies
-├── .env               # API keys (not in git)
-├── .gitignore         # Git ignore rules
-├── static/
-│   ├── style.css      # Styling
-│   └── script.js      # Frontend logic
-└── templates/
-    └── index.html     # Main page
-```
-
-## Cost Considerations
-
-This project uses `gpt-4o-mini` which is very affordable:
-- ~$0.15 per 1M input tokens
-- ~$0.60 per 1M output tokens
-
 Perfect for local testing and portfolio demos!
 
 ## Security Notes
@@ -195,3 +121,4 @@ Perfect for local testing and portfolio demos!
 - Never commit your `.env` file
 - Keep your API key private
 - Use environment variables for all secrets
+
