@@ -1,3 +1,4 @@
+from flask_cors import CORS
 from flask import Flask, request, jsonify
 import google.generativeai as genai
 from dotenv import load_dotenv
@@ -6,6 +7,7 @@ import PyPDF2
 import docx
 import io
 import json
+import time
 
 # Load environment variables
 load_dotenv()
@@ -13,14 +15,14 @@ load_dotenv()
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
-# Initialize Google Gemini
+# Initialise Google Gemini
 genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
 model = genai.GenerativeModel('gemini-flash-latest')
 
 # System prompt for resume analysis
 SYSTEM_PROMPT = """
 You are an AI resume evaluation engine.
-
+You must behave deterministically and conservatively.
 Your job is to compare a candidate's resume against a job description.
 
 RULES (NON-NEGOTIABLE):
@@ -28,6 +30,7 @@ RULES (NON-NEGOTIABLE):
 - Do NOT include markdown
 - Do NOT include explanations outside JSON
 - Do NOT hallucinate skills not present in the resume
+- If unsure, return empty arrays instead of guessing
 
 Return JSON in this exact schema:
 
@@ -76,8 +79,24 @@ def extract_text_from_file(file):
         return file.read().decode('utf-8')
     else:
         raise Exception("Unsupported file format. Please upload PDF, DOCX, or TXT files.")
+def error_response(message, status=400):
+    return jsonify({
+        "success": False,
+        "error": message
+    }), status
+
+@app.before_request
+def start_timer():
+    request.start_time = time.time()
 
 
+@app.after_request
+def log_request(response):
+    duration = round(time.time() - request.start_time, 3)
+    print(f"{request.method} {request.path} -> {response.status_code} [{duration}s]")
+    return response
+
+# NOTE: In production, this endpoint should be rate-limited (e.g., Flask-Limiter + Redis)
 
 @app.route('/api/analyze', methods=['POST'])
 def analyze_resume():
@@ -90,6 +109,10 @@ def analyze_resume():
 
         if not job_description:
             return jsonify({"error": "Job description is required"}), 400
+        if len(job_description.strip()) < 50:
+            return jsonify({
+                "error": "Job description too short to analyze"
+            }), 400
 
         resume_text = extract_text_from_file(resume_file)
 
@@ -141,9 +164,11 @@ def health_check():
         "service": "AI Resume Scanner",
         "version": "1.0.0"
     }), 200
+  CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
+
 
 
