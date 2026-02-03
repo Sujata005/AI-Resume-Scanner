@@ -14,7 +14,7 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
-
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 # Initialise Google Gemini
 genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
 model = genai.GenerativeModel('gemini-flash-latest')
@@ -164,11 +164,10 @@ def health_check():
         "service": "AI Resume Scanner",
         "version": "1.0.0"
     }), 200
-  CORS(app, resources={r"/api/*": {"origins": "*"}})
-
-
+  
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
+
 
 
 
