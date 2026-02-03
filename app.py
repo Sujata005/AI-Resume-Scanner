@@ -88,6 +88,13 @@ def error_response(message, status=400):
 @app.before_request
 def start_timer():
     request.start_time = time.time()
+@app.route("/", methods=["GET"])
+def root():
+    return jsonify({
+        "message": "AI Resume Scanner API",
+        "health": "/api/health",
+        "analyze": "/api/analyze"
+    })
 
 
 @app.after_request
@@ -167,6 +174,7 @@ def health_check():
   
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
+
 
 
 
