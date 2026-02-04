@@ -1,3 +1,5 @@
+THIS_SHOULD_CRASH_THE_BUILD_IMMEDIATELY
+
 import { useState } from "react"
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL
