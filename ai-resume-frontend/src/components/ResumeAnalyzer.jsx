@@ -1,4 +1,5 @@
 import { useState } from "react"
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL
 
 export default function ResumeAnalyzer() {
@@ -9,39 +10,10 @@ export default function ResumeAnalyzer() {
   const [error, setError] = useState("")
 
   const handleSubmit = async () => {
-  if (!resume || jobDesc.length < 50) {
-    setError("Upload a resume and add a proper job description.")
-    return
-  }
-
-  setError("")
-  setLoading(true)
-  setResult(null)
-
-  const formData = new FormData()
-  formData.append("resume", resume)
-  formData.append("job_description", jobDesc)
-
-  try {
-    const res = await fetch(`${API_BASE}/api/analyze`, {
-      method: "POST",
-      body: formData
-    })
-
-    if (!res.ok) throw new Error("Server error")
-
-    const data = await res.json()
-    if (!data.success) throw new Error(data.error)
-
-    setResult(data.data)
-
-  } catch (err) {
-    setError("Analysis failed. Please try again.")
-  } finally {
-    setLoading(false)
-  }
-}
-
+    if (!resume || jobDesc.length < 50) {
+      setError("Upload a resume and add a proper job description.")
+      return
+    }
 
     setError("")
     setLoading(true)
@@ -51,13 +23,21 @@ export default function ResumeAnalyzer() {
     formData.append("resume", resume)
     formData.append("job_description", jobDesc)
 
-  
+    try {
+      const res = await fetch(`${API_BASE}/api/analyze`, {
+        method: "POST",
+        body: formData
+      })
+
+      if (!res.ok) throw new Error("Server error")
+
       const data = await res.json()
       if (!data.success) throw new Error(data.error)
 
       setResult(data.data)
+
     } catch (err) {
-      setError("Something broke. Backend cried. Try again.")
+      setError("Analysis failed. Please try again.")
     } finally {
       setLoading(false)
     }
@@ -81,54 +61,51 @@ export default function ResumeAnalyzer() {
       />
 
       <button
-  onClick={handleSubmit}
-  disabled={loading}
-  className={`btn-primary w-full transition-all duration-300 ${
-    loading ? "animate-pulse-soft opacity-80" : "hover:scale-[1.02]"
-  }`}
->
-  {loading ? "Analyzing..." : "Analyze Resume"}
-</button>
-
+        onClick={handleSubmit}
+        disabled={loading}
+        className={`btn-primary w-full transition-all duration-300 ${
+          loading ? "animate-pulse-soft opacity-80" : "hover:scale-[1.02]"
+        }`}
+      >
+        {loading ? "Analyzing..." : "Analyze Resume"}
+      </button>
 
       {error && <p className="text-red-400 text-sm">{error}</p>}
 
       {result && (
         <div className="mt-8 space-y-6 animate-fade-up">
           <div className="flex items-center gap-4">
-  <div className="relative w-20 h-20">
-    <div className="animate-fade-up delay-100">...</div>
-<div className="animate-fade-up delay-200">...</div>
+            <div className="relative w-20 h-20">
+              <div className="absolute inset-0 rounded-full border-4 border-white/10" />
+              <div
+                className="absolute inset-0 rounded-full border-4 border-green-400"
+                style={{
+                  clipPath: `inset(${100 - result.matchScore}% 0 0 0)`
+                }}
+              />
+              <span className="absolute inset-0 flex items-center justify-center font-bold text-lg">
+                {result.matchScore}%
+              </span>
+            </div>
 
-    <div className="absolute inset-0 rounded-full border-4 border-white/10" />
-    <div
-      className="absolute inset-0 rounded-full border-4 border-green-400"
-      style={{
-        clipPath: `inset(${100 - result.matchScore}% 0 0 0)`
-      }}
-    />
-    <span className="absolute inset-0 flex items-center justify-center font-bold text-lg">
-      {result.matchScore}%
-    </span>
-  </div>
-
-  <h2 className="text-xl font-semibold">
-    Resume Match Score
-  </h2>
-</div>
-
+            <h2 className="text-xl font-semibold">Resume Match Score</h2>
+          </div>
 
           <div>
             <h3 className="font-semibold mb-1">Strengths</h3>
             <ul className="list-disc ml-5 text-white/80">
-              {result.strengths.map((s, i) => <li key={i}>{s}</li>)}
+              {result.strengths.map((s, i) => (
+                <li key={i}>{s}</li>
+              ))}
             </ul>
           </div>
 
           <div>
             <h3 className="font-semibold mb-1">Missing Skills</h3>
             <ul className="list-disc ml-5 text-white/80">
-              {result.missingSkills.map((s, i) => <li key={i}>{s}</li>)}
+              {result.missingSkills.map((s, i) => (
+                <li key={i}>{s}</li>
+              ))}
             </ul>
           </div>
 
