@@ -26,16 +26,20 @@ export default function ResumeAnalyzer() {
     try {
       const res = await fetch(`${API_BASE}/api/analyze`, {
         method: "POST",
-        body: formData
+        body: formData,
       })
 
-      if (!res.ok) throw new Error("Server error")
+      if (!res.ok) {
+        throw new Error("Server error")
+      }
 
       const data = await res.json()
-      if (!data.success) throw new Error(data.error)
+
+      if (!data.success) {
+        throw new Error(data.error || "Analysis failed")
+      }
 
       setResult(data.data)
-
     } catch (err) {
       setError("Analysis failed. Please try again.")
     } finally {
@@ -63,9 +67,7 @@ export default function ResumeAnalyzer() {
       <button
         onClick={handleSubmit}
         disabled={loading}
-        className={`btn-primary w-full transition-all duration-300 ${
-          loading ? "animate-pulse-soft opacity-80" : "hover:scale-[1.02]"
-        }`}
+        className="btn-primary w-full"
       >
         {loading ? "Analyzing..." : "Analyze Resume"}
       </button>
@@ -73,27 +75,14 @@ export default function ResumeAnalyzer() {
       {error && <p className="text-red-400 text-sm">{error}</p>}
 
       {result && (
-        <div className="mt-8 space-y-6 animate-fade-up">
-          <div className="flex items-center gap-4">
-            <div className="relative w-20 h-20">
-              <div className="absolute inset-0 rounded-full border-4 border-white/10" />
-              <div
-                className="absolute inset-0 rounded-full border-4 border-green-400"
-                style={{
-                  clipPath: `inset(${100 - result.matchScore}% 0 0 0)`
-                }}
-              />
-              <span className="absolute inset-0 flex items-center justify-center font-bold text-lg">
-                {result.matchScore}%
-              </span>
-            </div>
-
-            <h2 className="text-xl font-semibold">Resume Match Score</h2>
-          </div>
+        <div className="mt-6 space-y-4">
+          <p className="font-bold text-lg">
+            Match Score: {result.matchScore}%
+          </p>
 
           <div>
-            <h3 className="font-semibold mb-1">Strengths</h3>
-            <ul className="list-disc ml-5 text-white/80">
+            <h3 className="font-semibold">Strengths</h3>
+            <ul className="list-disc ml-5">
               {result.strengths.map((s, i) => (
                 <li key={i}>{s}</li>
               ))}
@@ -101,8 +90,8 @@ export default function ResumeAnalyzer() {
           </div>
 
           <div>
-            <h3 className="font-semibold mb-1">Missing Skills</h3>
-            <ul className="list-disc ml-5 text-white/80">
+            <h3 className="font-semibold">Missing Skills</h3>
+            <ul className="list-disc ml-5">
               {result.missingSkills.map((s, i) => (
                 <li key={i}>{s}</li>
               ))}
@@ -110,8 +99,8 @@ export default function ResumeAnalyzer() {
           </div>
 
           <div>
-            <h3 className="font-semibold mb-1">Summary</h3>
-            <p className="text-white/70">{result.summary}</p>
+            <h3 className="font-semibold">Summary</h3>
+            <p>{result.summary}</p>
           </div>
         </div>
       )}
