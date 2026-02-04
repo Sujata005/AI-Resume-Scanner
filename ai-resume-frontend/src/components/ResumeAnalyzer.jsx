@@ -1,4 +1,5 @@
 import { useState } from "react"
+const API_BASE = import.meta.env.VITE_API_BASE_URL
 
 export default function ResumeAnalyzer() {
   const [resume, setResume] = useState(null)
@@ -8,10 +9,39 @@ export default function ResumeAnalyzer() {
   const [error, setError] = useState("")
 
   const handleSubmit = async () => {
-    if (!resume || jobDesc.length < 50) {
-      setError("Upload a resume and add a proper job description.")
-      return
-    }
+  if (!resume || jobDesc.length < 50) {
+    setError("Upload a resume and add a proper job description.")
+    return
+  }
+
+  setError("")
+  setLoading(true)
+  setResult(null)
+
+  const formData = new FormData()
+  formData.append("resume", resume)
+  formData.append("job_description", jobDesc)
+
+  try {
+    const res = await fetch(`${API_BASE}/api/analyze`, {
+      method: "POST",
+      body: formData
+    })
+
+    if (!res.ok) throw new Error("Server error")
+
+    const data = await res.json()
+    if (!data.success) throw new Error(data.error)
+
+    setResult(data.data)
+
+  } catch (err) {
+    setError("Analysis failed. Please try again.")
+  } finally {
+    setLoading(false)
+  }
+}
+
 
     setError("")
     setLoading(true)
@@ -21,12 +51,7 @@ export default function ResumeAnalyzer() {
     formData.append("resume", resume)
     formData.append("job_description", jobDesc)
 
-    try {
-      const res = await fetch("https://ai-resume-scanner-224e.onrender.com/api/analyze", {
-        method: "POST",
-        body: formData
-      })
-
+  
       const data = await res.json()
       if (!data.success) throw new Error(data.error)
 
