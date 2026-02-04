@@ -29,15 +29,10 @@ export default function ResumeAnalyzer() {
         body: formData,
       })
 
-      if (!res.ok) {
-        throw new Error("Server error")
-      }
+      if (!res.ok) throw new Error("Server error")
 
       const data = await res.json()
-
-      if (!data.success) {
-        throw new Error(data.error || "Analysis failed")
-      }
+      if (!data.success) throw new Error(data.error)
 
       setResult(data.data)
     } catch (err) {
@@ -75,10 +70,10 @@ export default function ResumeAnalyzer() {
       {error && <p className="text-red-400 text-sm">{error}</p>}
 
       {result && (
-        <div className="mt-6 space-y-4">
-          <p className="font-bold text-lg">
+        <div className="mt-8 space-y-4">
+          <h2 className="text-xl font-semibold">
             Match Score: {result.matchScore}%
-          </p>
+          </h2>
 
           <div>
             <h3 className="font-semibold">Strengths</h3>
@@ -98,10 +93,7 @@ export default function ResumeAnalyzer() {
             </ul>
           </div>
 
-          <div>
-            <h3 className="font-semibold">Summary</h3>
-            <p>{result.summary}</p>
-          </div>
+          <p>{result.summary}</p>
         </div>
       )}
     </div>
