@@ -1,3 +1,4 @@
+from PyPDF2 import PdfReader
 from flask_cors import CORS
 from flask import Flask, request, jsonify
 import google.generativeai as genai
@@ -168,6 +169,7 @@ def health_check():
   
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
+
 
 
 
