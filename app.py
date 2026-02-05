@@ -105,64 +105,58 @@ def log_request(response):
 
 # NOTE: In production, this endpoint should be rate-limited (e.g., Flask-Limiter + Redis)
 
-@app.route('/api/analyze', methods=['POST'])
-def analyze_resume():
+@app.route("/api/analyze", methods=["POST"])
+def analyze():
     try:
-        if 'resume' not in request.files:
-            return jsonify({"error": "Resume file is required"}), 400
+        file = request.files.get("resume")
+        job_desc = request.form.get("job_description", "").strip()
 
-        resume_file = request.files['resume']
-        job_description = request.form.get('job_description')
+        print("📄 File received:", file.filename if file else "NO FILE")
+        print("📝 JD length:", len(job_desc))
 
-        if not job_description:
-            return jsonify({"error": "Job description is required"}), 400
-        if len(job_description.strip()) < 50:
+        if not file or not job_desc:
+            return jsonify({"error": "Missing resume or job description"}), 400
+
+        reader = PdfReader(file)
+        resume_text = ""
+
+        for page in reader.pages:
+            text = page.extract_text()
+            if text:
+                resume_text += text + "\n"
+
+        print("📃 Resume text length:", len(resume_text))
+
+        if len(resume_text) < 100:
             return jsonify({
-                "error": "Job description too short to analyze"
+                "error": "Resume text could not be extracted properly. Try a different PDF."
             }), 400
 
-        resume_text = extract_text_from_file(resume_file)
-
-        if not resume_text.strip():
-            return jsonify({"error": "Failed to extract resume text"}), 400
-
         prompt = f"""
-Job Description:
-{job_description}
+Compare this resume with the job description.
 
-Candidate Resume:
-{resume_text[:3500]}
+Resume:
+{resume_text}
+
+Job Description:
+{job_desc}
+
+Give a match percentage and feedback.
 """
 
-        response = model.generate_content(
-            SYSTEM_PROMPT + prompt,
-            generation_config=genai.types.GenerationConfig(
-                temperature=0.3,
-                max_output_tokens=800
-            )
-        )
-
-        raw_output = response.text.strip()
-
-        # HARD validation: must be valid JSON
-        try:
-            parsed_output = json.loads(raw_output)
-        except Exception:
-            return jsonify({
-                "error": "AI returned invalid JSON",
-                "rawResponse": raw_output
-            }), 500
+        response = model.generate_content(prompt)
 
         return jsonify({
-            "success": True,
-            "data": parsed_output
+            "result": response.text
         })
 
     except Exception as e:
+        print("🔥 ANALYSIS ERROR:", str(e))
         return jsonify({
-            "success": False,
-            "error": str(e)
+            "error": "Internal analysis error",
+            "details": str(e)
         }), 500
+
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
@@ -174,6 +168,7 @@ def health_check():
   
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
+
 
 
 
