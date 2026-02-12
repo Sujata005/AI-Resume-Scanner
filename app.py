@@ -148,8 +148,12 @@ Give a match percentage and feedback.
         response = model.generate_content(prompt)
 
         return jsonify({
-            "result": response.text
+          "success": True,
+          "data": {
+            "summary": response.text
+           }
         })
+
 
     except Exception as e:
         print("🔥 ANALYSIS ERROR:", str(e))
@@ -169,6 +173,7 @@ def health_check():
   
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
+
 
 
 
